@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Download, FileText, RefreshCw } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
+import { useAuth } from "@/contexts/AuthContext"
+import { useNavigate } from "react-router-dom"
 import heroImage from "@/assets/hero-image.jpg"
 
 type AppState = "upload" | "processing" | "results"
@@ -19,11 +21,20 @@ interface EvaluationResults {
 }
 
 const Dashboard = () => {
+  const { user, addEvaluation } = useAuth()
+  const navigate = useNavigate()
   const [appState, setAppState] = React.useState<AppState>("upload")
   const [currentStep, setCurrentStep] = React.useState(0)
   const [uploadedFile, setUploadedFile] = React.useState<File | null>(null)
   const [evaluations, setEvaluations] = React.useState(defaultEvaluations)
   const [results, setResults] = React.useState<EvaluationResults>({})
+
+  // Redirect to auth if not logged in
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/auth')
+    }
+  }, [user, navigate])
 
   const handleFileSelect = (file: File) => {
     setUploadedFile(file)
@@ -84,6 +95,23 @@ const Dashboard = () => {
     setEvaluations(updatedEvaluations)
     setCurrentStep(2)
     setAppState("results")
+    
+    // Save to user history
+    if (uploadedFile) {
+      addEvaluation({
+        id: Date.now().toString(),
+        fileName: uploadedFile.name,
+        uploadDate: new Date().toISOString(),
+        overallScore: getOverallScore(),
+        evaluations: updatedEvaluations.map(e => ({
+          id: e.id,
+          title: e.title,
+          score: e.score || 0,
+          summary: e.summary || '',
+          icon: ''
+        }))
+      })
+    }
     
     toast({
       title: "Analysis complete!",

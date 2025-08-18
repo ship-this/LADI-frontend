@@ -1,6 +1,9 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { BookOpen, Brain } from "lucide-react"
+import { BookOpen, Brain, User, History, LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useAuth } from "@/contexts/AuthContext"
+import { useNavigate } from "react-router-dom"
 
 interface HeaderProps {
   className?: string
@@ -8,6 +11,14 @@ interface HeaderProps {
 
 export const Header = React.forwardRef<HTMLElement, HeaderProps>(
   ({ className, ...props }, ref) => {
+    const { user, logout } = useAuth()
+    const navigate = useNavigate()
+
+    const handleLogout = () => {
+      logout()
+      navigate('/auth')
+    }
+
     return (
       <header
         ref={ref}
@@ -25,7 +36,10 @@ export const Header = React.forwardRef<HTMLElement, HeaderProps>(
               </div>
               <BookOpen className="absolute -bottom-1 -right-1 h-4 w-4 text-secondary" />
             </div>
-            <div>
+            <div 
+              className="cursor-pointer" 
+              onClick={() => navigate('/')}
+            >
               <h1 className="text-xl font-bold text-foreground">
                 LADI Evaluator
               </h1>
@@ -44,6 +58,31 @@ export const Header = React.forwardRef<HTMLElement, HeaderProps>(
                 6 Comprehensive Evaluations
               </p>
             </div>
+            
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 text-sm">
+                  <User className="h-4 w-4" />
+                  <span>{user.name}</span>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/history')}
+                >
+                  <History className="h-4 w-4 mr-2" />
+                  History
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>
+                Sign In
+              </Button>
+            )}
           </div>
         </div>
       </header>
