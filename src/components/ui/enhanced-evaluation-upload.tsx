@@ -185,13 +185,23 @@ const EnhancedEvaluationUpload: React.FC<EnhancedEvaluationUploadProps> = ({
     } catch (error) {
       console.error('Evaluation error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Evaluation failed'
-      onError(errorMessage)
       
-      toast({
-        title: "Evaluation failed",
-        description: errorMessage,
-        variant: "destructive"
-      })
+      // Check if it's an OpenAI configuration error
+      if (errorMessage.includes('OpenAI API is not configured') || errorMessage.includes('OPENAI_API_KEY')) {
+        toast({
+          title: "OpenAI Configuration Required",
+          description: "AI-powered evaluation requires OpenAI API configuration. Please contact your administrator to set up the OPENAI_API_KEY environment variable.",
+          variant: "destructive"
+        })
+      } else {
+        toast({
+          title: "Evaluation failed",
+          description: errorMessage,
+          variant: "destructive"
+        })
+      }
+      
+      onError(errorMessage)
     } finally {
       setIsProcessing(false)
     }

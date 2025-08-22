@@ -132,6 +132,16 @@ const BasicEvaluation = () => {
         setTimeout(() => {
           window.location.href = '/login'
         }, 2000)
+      } else if (errorMessage.includes('OpenAI API is not configured') || errorMessage.includes('OPENAI_API_KEY')) {
+        setProcessingError('AI-powered evaluation requires OpenAI API configuration. Please contact your administrator.')
+        setAppState("upload")
+        setCurrentStep(0)
+        
+        toast({
+          title: "OpenAI Configuration Required",
+          description: "AI-powered evaluation requires OpenAI API configuration. Please contact your administrator to set up the OPENAI_API_KEY environment variable.",
+          variant: "destructive"
+        })
       } else {
         setProcessingError(errorMessage)
         setAppState("upload")

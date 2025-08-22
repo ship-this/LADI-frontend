@@ -98,6 +98,7 @@ class ApiService {
       'Password must be at least 8 characters long': 'Password must be at least 8 characters long.',
       'Password must contain at least one uppercase letter': 'Password must contain at least one uppercase letter.',
       'Password must contain at least one lowercase letter': 'Password must contain at least one lowercase letter.',
+      'OpenAI API is not configured': 'AI-powered evaluation requires OpenAI API configuration. Please contact your administrator to set up the OPENAI_API_KEY environment variable.',
       'Password must contain at least one number': 'Password must contain at least one number.',
       'Email and password are required': 'Please enter both email and password.',
       'Invalid refresh token': 'Your session has expired. Please log in again.',
@@ -222,6 +223,12 @@ class ApiService {
         
         // Return specific error message from server
         const errorMessage = this.getErrorMessage(data.error || data.message || '', response.status);
+        
+        // Check if it's an OpenAI configuration error
+        if (data.error_type === 'openai_configuration' || errorMessage.includes('OpenAI API is not configured')) {
+          throw new Error('OpenAI API is not configured. Please contact your administrator to set up the OPENAI_API_KEY environment variable.');
+        }
+        
         throw new Error(errorMessage);
       }
 
