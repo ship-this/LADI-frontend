@@ -19,6 +19,11 @@ export const Header = React.forwardRef<HTMLElement, HeaderProps>(
       navigate('/auth')
     }
 
+    const getUserDisplayName = () => {
+      if (!user) return ''
+      return `${user.first_name} ${user.last_name}`.trim() || user.email
+    }
+
     return (
       <header
         ref={ref}
@@ -63,7 +68,7 @@ export const Header = React.forwardRef<HTMLElement, HeaderProps>(
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2 text-sm">
                   <User className="h-4 w-4" />
-                  <span>{user.name}</span>
+                  <span>{getUserDisplayName()}</span>
                 </div>
                 <Button 
                   variant="outline" 

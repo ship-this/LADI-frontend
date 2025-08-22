@@ -2,7 +2,9 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, FileText, Users, Zap, Globe, Star, TrendingUp } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { CheckCircle, FileText, Users, Zap, Globe, Star, TrendingUp, Eye } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 interface EvaluationResult {
   id: string
@@ -17,11 +19,14 @@ interface EvaluationResult {
 interface EvaluationCardProps {
   evaluation: EvaluationResult
   className?: string
+  showViewDetail?: boolean
+  evaluationId?: number
 }
 
 export const EvaluationCard = React.forwardRef<HTMLDivElement, EvaluationCardProps>(
-  ({ evaluation, className, ...props }, ref) => {
+  ({ evaluation, className, showViewDetail = false, evaluationId, ...props }, ref) => {
     const IconComponent = evaluation.icon
+    const navigate = useNavigate()
 
     const getScoreColor = (score?: number) => {
       if (!score) return "text-muted-foreground"
@@ -115,6 +120,20 @@ export const EvaluationCard = React.forwardRef<HTMLDivElement, EvaluationCardPro
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <div className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse" />
               <span>Awaiting analysis...</span>
+            </div>
+          )}
+          
+          {showViewDetail && evaluationId && evaluation.status === "completed" && (
+            <div className="pt-4 border-t border-border">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => navigate(`/evaluation/${evaluationId}`)}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View Details
+              </Button>
             </div>
           )}
         </CardContent>

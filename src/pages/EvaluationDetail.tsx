@@ -5,15 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, Download, FileText, Calendar, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Calendar, TrendingUp, Users, Zap, Globe, Star } from 'lucide-react';
 import { EvaluationCard } from '@/components/ui/evaluation-card';
+import { apiService } from '@/services/api';
+import { toast } from '@/hooks/use-toast';
 
 const EvaluationDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { evaluationHistory } = useAuth();
+  const [loading, setLoading] = React.useState(false);
 
-  const evaluation = evaluationHistory.find(evalItem => evalItem.id === id);
+  const evaluation = evaluationHistory.find(evalItem => evalItem.id.toString() === id);
 
   if (!evaluation) {
     return (
@@ -54,6 +57,42 @@ const EvaluationDetail = () => {
     return "destructive";
   };
 
+  const getIconComponent = (iconName: string) => {
+    const iconMap: Record<string, React.ComponentType<any>> = {
+      'FileText': FileText,
+      'TrendingUp': TrendingUp,
+      'Users': Users,
+      'Zap': Zap,
+      'Globe': Globe,
+      'Star': Star,
+    };
+    return iconMap[iconName] || FileText;
+  };
+
+  const handleDownload = async () => {
+    if (!evaluation) return;
+    
+    setLoading(true);
+    try {
+      // Use the improved download method
+      await apiService.downloadEvaluationPdf(evaluation.id);
+      
+      toast({
+        title: "Download started",
+        description: "Your evaluation report is downloading...",
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download failed",
+        description: error instanceof Error ? error.message : 'Failed to download report',
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -70,9 +109,9 @@ const EvaluationDetail = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to History
             </Button>
-            <Button onClick={() => {}}>
+            <Button onClick={handleDownload} disabled={loading}>
               <Download className="h-4 w-4 mr-2" />
-              Download Report
+              {loading ? 'Preparing...' : 'Download Report'}
             </Button>
           </div>
 
@@ -150,7 +189,7 @@ const EvaluationDetail = () => {
                     score: evalItem.score,
                     status: 'completed' as const,
                     summary: evalItem.summary,
-                    icon: evalItem.icon as any
+                    icon: getIconComponent(evalItem.icon)
                   }}
                   className="animate-fade-in"
                 />

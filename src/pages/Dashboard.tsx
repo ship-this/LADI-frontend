@@ -1,143 +1,32 @@
 import * as React from "react"
 import { Header } from "@/components/layout/header"
-import { FileUpload } from "@/components/ui/file-upload"
-import { ProgressIndicator } from "@/components/ui/progress-indicator"
-import { EvaluationCard, defaultEvaluations } from "@/components/ui/evaluation-card"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Download, FileText, RefreshCw } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { FileText, Upload, Settings, BarChart3, History, Users, BookOpen } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useNavigate } from "react-router-dom"
 import heroImage from "@/assets/hero-image.jpg"
 
-type AppState = "upload" | "processing" | "results"
-
-interface EvaluationResults {
-  [key: string]: {
-    score: number
-    summary: string
-  }
-}
-
 const Dashboard = () => {
-  const { user, addEvaluation } = useAuth()
+  const { user, isLoading } = useAuth()
   const navigate = useNavigate()
-  const [appState, setAppState] = React.useState<AppState>("upload")
-  const [currentStep, setCurrentStep] = React.useState(0)
-  const [uploadedFile, setUploadedFile] = React.useState<File | null>(null)
-  const [evaluations, setEvaluations] = React.useState(defaultEvaluations)
-  const [results, setResults] = React.useState<EvaluationResults>({})
 
   // Redirect to auth if not logged in
   React.useEffect(() => {
-    if (!user) {
+    if (!user && !isLoading) {
       navigate('/auth')
     }
-  }, [user, navigate])
+  }, [user, isLoading, navigate])
 
-  const handleFileSelect = (file: File) => {
-    setUploadedFile(file)
-    setAppState("processing")
-    setCurrentStep(1)
-    
-    toast({
-      title: "File uploaded successfully",
-      description: `${file.name} is ready for analysis`,
-    })
-
-    // Simulate processing
-    simulateProcessing()
-  }
-
-  const simulateProcessing = async () => {
-    // Simulate AI processing with realistic timing
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Mock results
-    const mockResults: EvaluationResults = {
-      "line-editing": {
-        score: 85,
-        summary: "Strong prose with excellent clarity. Minor grammar inconsistencies noted in dialogue sections."
-      },
-      "plot": {
-        score: 78,
-        summary: "Well-structured narrative with good pacing. The middle section could benefit from increased tension."
-      },
-      "character": {
-        score: 92,
-        summary: "Exceptional character development with clear motivations and authentic dialogue throughout."
-      },
-      "flow": {
-        score: 80,
-        summary: "Smooth transitions between scenes. Some chapters end abruptly but overall flow is engaging."
-      },
-      "worldbuilding": {
-        score: 88,
-        summary: "Rich, immersive setting with consistent internal logic. Great attention to environmental details."
-      },
-      "readiness": {
-        score: 84,
-        summary: "High readiness for publication. Minor revisions recommended before final submission."
-      }
-    }
-
-    setResults(mockResults)
-    
-    // Update evaluations with results
-    const updatedEvaluations = defaultEvaluations.map(evaluation => ({
-      ...evaluation,
-      status: "completed" as const,
-      score: mockResults[evaluation.id]?.score,
-      summary: mockResults[evaluation.id]?.summary
-    }))
-    
-    setEvaluations(updatedEvaluations)
-    setCurrentStep(2)
-    setAppState("results")
-    
-    // Save to user history
-    if (uploadedFile) {
-      addEvaluation({
-        id: Date.now().toString(),
-        fileName: uploadedFile.name,
-        uploadDate: new Date().toISOString(),
-        overallScore: getOverallScore(),
-        evaluations: updatedEvaluations.map(e => ({
-          id: e.id,
-          title: e.title,
-          score: e.score || 0,
-          summary: e.summary || '',
-          icon: ''
-        }))
-      })
-    }
-    
-    toast({
-      title: "Analysis complete!",
-      description: "Your manuscript evaluation is ready for download",
-    })
-  }
-
-  const handleDownload = () => {
-    // In a real implementation, this would generate and download a PDF
-    toast({
-      title: "Download started",
-      description: "Your evaluation report is being prepared...",
-    })
-  }
-
-  const handleReset = () => {
-    setAppState("upload")
-    setCurrentStep(0)
-    setUploadedFile(null)
-    setEvaluations(defaultEvaluations)
-    setResults({})
-  }
-
-  const getOverallScore = () => {
-    const scores = Object.values(results).map(r => r.score)
-    return scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -161,114 +50,160 @@ const Dashboard = () => {
             <p className="text-xl text-muted-foreground mb-6">
               Get comprehensive AI-powered evaluation across 6 key dimensions of your manuscript
             </p>
-            {appState === "upload" && (
-              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                <div className="flex items-center space-x-2">
-                  <FileText className="h-4 w-4" />
-                  <span>PDF & DOCX Support</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RefreshCw className="h-4 w-4" />
-                  <span>3-5 Minutes Processing</span>
-                </div>
+            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+              <div className="flex items-center space-x-2">
+                <FileText className="h-4 w-4" />
+                <span>PDF & DOCX Support</span>
               </div>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Upload & Progress */}
-          <div className="lg:col-span-1 space-y-6">
-            {appState === "upload" && (
-              <Card className="card-shadow">
-                <CardHeader>
-                  <CardTitle>Upload Your Manuscript</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <FileUpload onFileSelect={handleFileSelect} />
-                </CardContent>
-              </Card>
-            )}
-
-            {(appState === "processing" || appState === "results") && (
-              <Card className="card-shadow">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    Analysis Progress
-                    {appState === "results" && (
-                      <Button variant="outline" size="sm" onClick={handleReset}>
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        New Analysis
-                      </Button>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ProgressIndicator currentStep={currentStep} />
-                  
-                  {uploadedFile && (
-                    <div className="mt-6 p-4 bg-muted rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-5 w-5 text-primary" />
-                        <div>
-                          <p className="font-medium text-sm">{uploadedFile.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {appState === "results" && (
-              <Card className="card-shadow border-success/20 bg-success-light/10">
-                <CardHeader>
-                  <CardTitle className="text-success">Analysis Complete</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-success mb-2">
-                      {getOverallScore()}/100
-                    </div>
-                    <p className="text-sm text-muted-foreground">Overall Score</p>
-                  </div>
-                  
-                  <Button onClick={handleDownload} className="w-full" size="lg">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download Full Report
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Right Column - Evaluations */}
-          <div className="lg:col-span-2">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-foreground">
-                  Evaluation Results
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  6 comprehensive analysis dimensions
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {evaluations.map((evaluation) => (
-                  <EvaluationCard 
-                    key={evaluation.id} 
-                    evaluation={evaluation}
-                    className="animate-fade-in"
-                  />
-                ))}
+              <div className="flex items-center space-x-2">
+                <Upload className="h-4 w-4" />
+                <span>3-5 Minutes Processing</span>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Main Action Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Basic Evaluation */}
+          <Card className="card-shadow hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/evaluate')}>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                <span>Basic Evaluation</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Quick evaluation using standard LADI criteria for manuscript analysis.
+              </p>
+              <Button className="w-full">
+                Start Evaluation
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Template Evaluation */}
+          <Card className="card-shadow hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/template-evaluation')}>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Settings className="h-5 w-5 text-primary" />
+                <span>Template Evaluation</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Advanced evaluation using custom templates and multiple analysis methods.
+              </p>
+              <Button className="w-full">
+                Try Template Evaluation
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Template Management */}
+          <Card className="card-shadow hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/template-management')}>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <span>Template Management</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Upload and manage your custom evaluation templates for personalized analysis.
+              </p>
+              <Button className="w-full">
+                Manage Templates
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Secondary Features */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Evaluation History */}
+          <Card className="card-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <History className="h-5 w-5 text-primary" />
+                <span>Evaluation History</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                View and download your previous evaluation reports and track your progress.
+              </p>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate('/history')}
+              >
+                View History
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* User Profile */}
+          <Card className="card-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Users className="h-5 w-5 text-primary" />
+                <span>User Profile</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Manage your account settings, preferences, and personal information.
+              </p>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate('/profile')}
+              >
+                Manage Profile
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Features Overview */}
+        <Card className="card-shadow">
+          <CardHeader>
+            <CardTitle>Platform Features</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <FileText className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-semibold mb-2">Multiple Formats</h3>
+                <p className="text-sm text-muted-foreground">
+                  Support for PDF and DOCX files with automatic text extraction
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <BarChart3 className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-semibold mb-2">6-Dimension Analysis</h3>
+                <p className="text-sm text-muted-foreground">
+                  Comprehensive evaluation across Line Editing, Plot, Character, Flow, Worldbuilding, and Readiness
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Settings className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-semibold mb-2">Custom Templates</h3>
+                <p className="text-sm text-muted-foreground">
+                  Create and use custom evaluation criteria tailored to your specific needs
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   )

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginFormProps {
   onToggleMode: () => void;
@@ -15,6 +16,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +29,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
           title: "Welcome back!",
           description: "You've been successfully logged in.",
         });
+        // Navigate to dashboard after successful login
+        navigate('/');
       } else {
         toast({
           title: "Login failed",
@@ -74,6 +78,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
               placeholder="Enter your password"
               required
             />
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="text-sm text-primary hover:underline"
+              >
+                Forgot password?
+              </button>
+            </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
