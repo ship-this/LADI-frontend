@@ -31,8 +31,8 @@ interface EvaluationHistory {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, firstName: string, lastName: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (email: string, password: string, firstName: string, lastName: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   evaluationHistory: EvaluationHistory[];
   addEvaluation: (evaluation: EvaluationHistory) => void;
@@ -102,7 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
     try {
       const response = await apiService.login({ email, password });
@@ -114,20 +114,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Load evaluation history after successful login
         await loadEvaluationHistory(userData);
         
-        return true;
+        return { success: true };
       } else {
         console.error('Login failed:', response.error);
-        return false;
+        return { success: false, error: response.error };
       }
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      return { success: false, error: error instanceof Error ? error.message : 'Login failed' };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signup = async (email: string, password: string, firstName: string, lastName: string): Promise<boolean> => {
+  const signup = async (email: string, password: string, firstName: string, lastName: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
     try {
       const response = await apiService.signup({
@@ -137,17 +137,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         last_name: lastName,
       });
       
-      if (response.success && response.data) {
+      if (response.success && response.data && response.data.user) {
         const userData = response.data.user;
         setUser(userData);
-        return true;
+        
+        // Store refresh token if available (same as login)
+        if (response.data.refresh_token) {
+          localStorage.setItem('ladi_refresh_token', response.data.refresh_token);
+        }
+        
+        // Load evaluation history after successful signup
+        await loadEvaluationHistory(userData);
+        
+        return { success: true };
       } else {
         console.error('Signup failed:', response.error);
-        return false;
+        return { success: false, error: response.error };
       }
     } catch (error) {
       console.error('Signup error:', error);
-      return false;
+      return { success: false, error: error instanceof Error ? error.message : 'Signup failed' };
     } finally {
       setIsLoading(false);
     }

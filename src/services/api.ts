@@ -88,6 +88,74 @@ class ApiService {
     // Note: refresh token is loaded when needed in refreshToken method
   }
 
+  private getErrorMessage(error: string, status?: number): string {
+    // Map common server errors to user-friendly messages
+    const errorMap: Record<string, string> = {
+      'User with this email already exists': 'An account with this email already exists. Please try logging in instead.',
+      'Invalid email or password': 'Invalid email or password. Please check your credentials and try again.',
+      'Account is deactivated': 'Your account has been deactivated. Please contact support.',
+      'Invalid email format': 'Please enter a valid email address.',
+      'Password must be at least 8 characters long': 'Password must be at least 8 characters long.',
+      'Password must contain at least one uppercase letter': 'Password must contain at least one uppercase letter.',
+      'Password must contain at least one lowercase letter': 'Password must contain at least one lowercase letter.',
+      'Password must contain at least one number': 'Password must contain at least one number.',
+      'Email and password are required': 'Please enter both email and password.',
+      'Invalid refresh token': 'Your session has expired. Please log in again.',
+      'User not found or inactive': 'User account not found or inactive.',
+      'Session expired': 'Your session has expired. Please log in again.',
+      'Refresh token is required': 'Session expired. Please log in again.',
+      'New password is required': 'New password is required.',
+    };
+
+    // Handle field-specific required errors
+    if (error.includes(' is required')) {
+      const field = error.replace(' is required', '');
+      const fieldMap: Record<string, string> = {
+        'email': 'Email',
+        'password': 'Password',
+        'first_name': 'First name',
+        'last_name': 'Last name',
+      };
+      const fieldName = fieldMap[field] || field;
+      return `${fieldName} is required.`;
+    }
+
+    // Check if we have a specific mapping for this error
+    if (errorMap[error]) {
+      return errorMap[error];
+    }
+
+    // Handle HTTP status codes
+    if (status) {
+      switch (status) {
+        case 400:
+          return error || 'Invalid request. Please check your input.';
+        case 401:
+          return error || 'Authentication failed. Please log in again.';
+        case 403:
+          return 'Access denied. You do not have permission to perform this action.';
+        case 404:
+          return 'Resource not found.';
+        case 409:
+          return error || 'Conflict with existing data.';
+        case 422:
+          return error || 'Validation error. Please check your input.';
+        case 429:
+          return 'Too many requests. Please try again later.';
+        case 500:
+          return 'Server error. Please try again later or contact support.';
+        case 502:
+        case 503:
+        case 504:
+          return 'Service temporarily unavailable. Please try again later.';
+        default:
+          return error || 'An unexpected error occurred.';
+      }
+    }
+
+    return error || 'An unexpected error occurred.';
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -151,21 +219,43 @@ class ApiService {
             throw new Error('Session expired. Please log in again.');
           }
         }
-        throw new Error(data.error || data.message || 'API request failed');
+        
+        // Return specific error message from server
+        const errorMessage = this.getErrorMessage(data.error || data.message || '', response.status);
+        throw new Error(errorMessage);
       }
 
       return { success: true, data };
     } catch (error) {
       console.error('API request failed:', error);
-      if (error instanceof Error && error.name === 'AbortError') {
-        return {
-          success: false,
-          error: 'Request timeout - the evaluation is taking longer than expected. Please try again or contact support if the issue persists.',
-        };
+      
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          return {
+            success: false,
+            error: 'Request timeout - the evaluation is taking longer than expected. Please try again or contact support if the issue persists.',
+          };
+        }
+        
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          return {
+            success: false,
+            error: 'Network error - please check your internet connection and try again.',
+          };
+        }
+        
+        if (error.message.includes('CORS')) {
+          return {
+            success: false,
+            error: 'Cross-origin request blocked. Please try refreshing the page.',
+          };
+        }
       }
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? this.getErrorMessage(error.message) : 'Unknown error',
       };
     }
   }
@@ -199,6 +289,11 @@ class ApiService {
     if (response.success && response.data) {
       this.token = response.data.access_token;
       localStorage.setItem('ladi_token', this.token);
+      
+      // Store refresh token if available (same as login)
+      if (response.data.refresh_token) {
+        localStorage.setItem('ladi_refresh_token', response.data.refresh_token);
+      }
     }
 
     return response;
