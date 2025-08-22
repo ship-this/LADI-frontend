@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 interface SignupFormProps {
   onToggleMode: () => void;
@@ -61,23 +61,28 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
     const newErrors: Record<string, string> = {};
     
     if (touched.firstName) {
-      newErrors.firstName = validateName(firstName, 'First name');
+      const firstNameError = validateName(firstName, 'First name');
+      if (firstNameError) newErrors.firstName = firstNameError;
     }
     
     if (touched.lastName) {
-      newErrors.lastName = validateName(lastName, 'Last name');
+      const lastNameError = validateName(lastName, 'Last name');
+      if (lastNameError) newErrors.lastName = lastNameError;
     }
     
     if (touched.email) {
-      newErrors.email = validateEmail(email);
+      const emailError = validateEmail(email);
+      if (emailError) newErrors.email = emailError;
     }
     
     if (touched.password) {
-      newErrors.password = validatePassword(password);
+      const passwordError = validatePassword(password);
+      if (passwordError) newErrors.password = passwordError;
     }
     
     if (touched.confirmPassword) {
-      newErrors.confirmPassword = validateConfirmPassword(confirmPassword);
+      const confirmPasswordError = validateConfirmPassword(confirmPassword);
+      if (confirmPasswordError) newErrors.confirmPassword = confirmPasswordError;
     }
     
     setErrors(newErrors);
@@ -88,14 +93,22 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
   };
 
   const isFormValid = () => {
-    return (
-      firstName.trim() &&
-      lastName.trim() &&
-      email.trim() &&
-      password &&
-      confirmPassword &&
-      Object.keys(errors).length === 0
-    );
+    // Check if all required fields have values
+    const hasAllFields = firstName.trim() && lastName.trim() && email.trim() && password && confirmPassword;
+    
+    if (!hasAllFields) {
+      console.log('Form validation: Missing required fields', { firstName: !!firstName.trim(), lastName: !!lastName.trim(), email: !!email.trim(), password: !!password, confirmPassword: !!confirmPassword });
+      return false;
+    }
+    
+    // Check if there are any validation errors for touched fields
+    const hasErrors = Object.keys(errors).some(key => errors[key]);
+    
+    if (hasErrors) {
+      console.log('Form validation: Has errors', errors);
+    }
+    
+    return !hasErrors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -169,18 +182,12 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
                   placeholder="First name"
                   className={errors.firstName ? 'border-red-500' : ''}
                 />
-                {touched.firstName && errors.firstName && (
-                  <div className="flex items-center mt-1 text-sm text-red-500">
-                    <AlertCircle className="h-4 w-4 mr-1" />
-                    {errors.firstName}
-                  </div>
-                )}
-                {touched.firstName && !errors.firstName && firstName && (
-                  <div className="flex items-center mt-1 text-sm text-green-500">
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Valid
-                  </div>
-                )}
+                                 {touched.firstName && errors.firstName && (
+                   <div className="flex items-center mt-1 text-sm text-red-500">
+                     <AlertCircle className="h-4 w-4 mr-1" />
+                     {errors.firstName}
+                   </div>
+                 )}
               </div>
             </div>
             <div className="space-y-2">
@@ -195,18 +202,12 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
                   placeholder="Last name"
                   className={errors.lastName ? 'border-red-500' : ''}
                 />
-                {touched.lastName && errors.lastName && (
-                  <div className="flex items-center mt-1 text-sm text-red-500">
-                    <AlertCircle className="h-4 w-4 mr-1" />
-                    {errors.lastName}
-                  </div>
-                )}
-                {touched.lastName && !errors.lastName && lastName && (
-                  <div className="flex items-center mt-1 text-sm text-green-500">
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Valid
-                  </div>
-                )}
+                                 {touched.lastName && errors.lastName && (
+                   <div className="flex items-center mt-1 text-sm text-red-500">
+                     <AlertCircle className="h-4 w-4 mr-1" />
+                     {errors.lastName}
+                   </div>
+                 )}
               </div>
             </div>
           </div>
@@ -223,18 +224,12 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
                 placeholder="Enter your email"
                 className={errors.email ? 'border-red-500' : ''}
               />
-              {touched.email && errors.email && (
-                <div className="flex items-center mt-1 text-sm text-red-500">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.email}
-                </div>
-              )}
-              {touched.email && !errors.email && email && (
-                <div className="flex items-center mt-1 text-sm text-green-500">
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  Valid email
-                </div>
-              )}
+                             {touched.email && errors.email && (
+                 <div className="flex items-center mt-1 text-sm text-red-500">
+                   <AlertCircle className="h-4 w-4 mr-1" />
+                   {errors.email}
+                 </div>
+               )}
             </div>
           </div>
           
@@ -259,18 +254,12 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
-              {touched.password && errors.password && (
-                <div className="flex items-center mt-1 text-sm text-red-500">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.password}
-                </div>
-              )}
-              {touched.password && !errors.password && password && (
-                <div className="flex items-center mt-1 text-sm text-green-500">
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  Strong password
-                </div>
-              )}
+                             {touched.password && errors.password && (
+                 <div className="flex items-center mt-1 text-sm text-red-500">
+                   <AlertCircle className="h-4 w-4 mr-1" />
+                   {errors.password}
+                 </div>
+               )}
             </div>
             <div className="text-xs text-muted-foreground">
               Password must be at least 8 characters with uppercase, lowercase, and number
@@ -298,25 +287,19 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
-              {touched.confirmPassword && errors.confirmPassword && (
-                <div className="flex items-center mt-1 text-sm text-red-500">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.confirmPassword}
-                </div>
-              )}
-              {touched.confirmPassword && !errors.confirmPassword && confirmPassword && (
-                <div className="flex items-center mt-1 text-sm text-green-500">
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  Passwords match
-                </div>
-              )}
+                             {touched.confirmPassword && errors.confirmPassword && (
+                 <div className="flex items-center mt-1 text-sm text-red-500">
+                   <AlertCircle className="h-4 w-4 mr-1" />
+                   {errors.confirmPassword}
+                 </div>
+               )}
             </div>
           </div>
 
           <Button 
             type="submit" 
             className="w-full" 
-            disabled={loading || !isFormValid()}
+            disabled={loading || !firstName.trim() || !lastName.trim() || !email.trim() || !password || !confirmPassword}
           >
             {loading ? "Creating Account..." : "Create Account"}
           </Button>
