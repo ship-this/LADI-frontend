@@ -59,7 +59,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Check if user is authenticated on app start
     const token = localStorage.getItem('ladi_token');
-    if (token && apiService.isAuthenticated()) {
+    if (token) {
+      // Set the token in the API service
+      apiService.setToken(token);
       // Try to load user profile
       loadUserProfile();
     }
@@ -67,18 +69,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadUserProfile = async () => {
     try {
+      console.log('Loading user profile...');
       const response = await apiService.getUserProfile();
-      if (response.success && response.data) {
-        setUser(response.data);
+      console.log('User profile response:', response);
+      
+      if (response.success && response.data && response.data.user) {
+        console.log('Setting user data:', response.data.user);
+        setUser(response.data.user);
       } else if (response.error?.includes('expired') || response.error?.includes('Session expired')) {
         // Token expired, clear authentication
         console.log('Token expired, clearing authentication');
         logout();
+      } else if (!response.success) {
+        console.error('Failed to load user profile:', response.error);
+        // Only logout if it's an authentication error, not other errors
+        if (response.error?.includes('401') || response.error?.includes('Unauthorized')) {
+          logout();
+        }
+      } else {
+        console.log('No user data in response');
+        logout();
       }
     } catch (error) {
       console.error('Failed to load user profile:', error);
-      // If profile load fails, clear authentication
-      logout();
+      // Only logout on network errors or authentication errors
+      if (error instanceof Error && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
+        logout();
+      }
     }
   };
 
@@ -87,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await apiService.login({ email, password });
       
-      if (response.success && response.data) {
+      if (response.success && response.data && response.data.user) {
         const userData = response.data.user;
         setUser(userData);
         

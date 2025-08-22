@@ -23,6 +23,10 @@ interface LoginResponse {
     first_name: string;
     last_name: string;
     role: string;
+    is_active: boolean;
+    email_verified: boolean;
+    created_at: string;
+    updated_at: string;
   };
 }
 
@@ -81,6 +85,7 @@ class ApiService {
   constructor() {
     // Load token from localStorage on initialization
     this.token = localStorage.getItem('ladi_token');
+    // Note: refresh token is loaded when needed in refreshToken method
   }
 
   private async request<T>(
@@ -175,6 +180,11 @@ class ApiService {
     if (response.success && response.data) {
       this.token = response.data.access_token;
       localStorage.setItem('ladi_token', this.token);
+      
+      // Store refresh token if available
+      if (response.data.refresh_token) {
+        localStorage.setItem('ladi_refresh_token', response.data.refresh_token);
+      }
     }
 
     return response;
@@ -202,6 +212,7 @@ class ApiService {
     } finally {
       this.token = null;
       localStorage.removeItem('ladi_token');
+      localStorage.removeItem('ladi_refresh_token');
     }
   }
 
@@ -653,7 +664,7 @@ class ApiService {
 
   // Utility methods
   isAuthenticated(): boolean {
-    return !!this.token;
+    return !!(this.token || localStorage.getItem('ladi_token'));
   }
 
   async checkAuthStatus(): Promise<boolean> {
