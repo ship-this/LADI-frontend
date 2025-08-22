@@ -138,16 +138,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (response.success && response.data && response.data.user) {
-        const userData = response.data.user;
-        setUser(userData);
-        
-        // Store refresh token if available (same as login)
-        if (response.data.refresh_token) {
-          localStorage.setItem('ladi_refresh_token', response.data.refresh_token);
-        }
-        
-        // Load evaluation history after successful signup
-        await loadEvaluationHistory(userData);
+        // Don't set user or load evaluation history - let user go through login flow
+        // The token is already set in apiService.signup() for immediate use if needed
         
         return { success: true };
       } else {

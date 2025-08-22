@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 interface SignupFormProps {
@@ -24,7 +23,6 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const { signup } = useAuth();
-  const navigate = useNavigate();
 
   // Validation functions
   const validateEmail = (email: string): string => {
@@ -137,14 +135,14 @@ export const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
 
     try {
       const result = await signup(email, password, firstName, lastName);
-      if (result.success) {
-        toast({
-          title: "Account created!",
-          description: "Welcome to LADI Evaluator. You can now start analyzing manuscripts.",
-        });
-        // Navigate to dashboard after successful signup
-        navigate('/');
-      } else {
+             if (result.success) {
+         toast({
+           title: "Account created!",
+           description: "Your account has been created successfully. Please sign in to continue.",
+         });
+         // Navigate to sign-in page after successful signup
+         onToggleMode();
+       } else {
         toast({
           title: "Signup failed",
           description: result.error || "Please check your information and try again.",
