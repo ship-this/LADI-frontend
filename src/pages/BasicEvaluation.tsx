@@ -21,7 +21,7 @@ interface EvaluationResults {
 }
 
 const BasicEvaluation = () => {
-  const { user, addEvaluation, isLoading } = useAuth()
+  const { user, addEvaluation, isLoading, isInitializing } = useAuth()
   const navigate = useNavigate()
   const [appState, setAppState] = React.useState<AppState>("upload")
   const [currentStep, setCurrentStep] = React.useState(0)
@@ -32,12 +32,12 @@ const BasicEvaluation = () => {
   const [processingError, setProcessingError] = React.useState<string | null>(null)
   const [isDownloading, setIsDownloading] = React.useState(false)
 
-  // Redirect to auth if not logged in
+  // Redirect to auth if not logged in and not initializing
   React.useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !isLoading && !isInitializing) {
       navigate('/auth')
     }
-  }, [user, isLoading, navigate])
+  }, [user, isLoading, isInitializing, navigate])
 
   const handleFileSelect = async (file: File) => {
     if (!user) {
@@ -89,12 +89,16 @@ const BasicEvaluation = () => {
         setCurrentStep(2)
         setAppState("results")
         
+        // Calculate overall score from categories data
+        const categoryScores = Object.values(categories).map((cat: any) => cat.score || 0)
+        const overallScore = categoryScores.length > 0 ? Math.round(categoryScores.reduce((a, b) => a + b, 0) / categoryScores.length) : 0
+        
         // Add to user's evaluation history
         addEvaluation({
           id: evaluationData.evaluation_id,
           fileName: file.name,
           uploadDate: new Date().toISOString(),
-          overallScore: getOverallScore(),
+          overallScore: overallScore,
           status: 'completed',
           evaluations: updatedEvaluations.map(e => ({
             id: e.id,

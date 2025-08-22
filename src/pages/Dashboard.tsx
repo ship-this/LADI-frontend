@@ -8,22 +8,25 @@ import { useNavigate } from "react-router-dom"
 import heroImage from "@/assets/hero-image.jpg"
 
 const Dashboard = () => {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, isInitializing } = useAuth()
   const navigate = useNavigate()
 
-  // Redirect to auth if not logged in
+  // Redirect to auth if not logged in and not initializing
   React.useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !isLoading && !isInitializing) {
       navigate('/auth')
     }
-  }, [user, isLoading, navigate])
+  }, [user, isLoading, isInitializing, navigate])
 
-  if (isLoading) {
+  // Show loading while initializing or loading
+  if (isLoading || isInitializing) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading...</p>
+          <p className="mt-4 text-muted-foreground">
+            {isInitializing ? 'Initializing...' : 'Loading...'}
+          </p>
         </div>
       </div>
     )

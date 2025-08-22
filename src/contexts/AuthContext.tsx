@@ -38,6 +38,7 @@ interface AuthContextType {
   addEvaluation: (evaluation: EvaluationHistory) => void;
   loadEvaluationHistory: (currentUser?: User) => Promise<void>;
   isLoading: boolean;
+  isInitializing: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -54,6 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [evaluationHistory, setEvaluationHistory] = useState<EvaluationHistory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true); // Add initialization state
   const loadingHistoryRef = useRef(false);
 
   useEffect(() => {
@@ -64,21 +66,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       apiService.setToken(token);
       // Try to load user profile
       loadUserProfile();
+    } else {
+      // No token found, finish initialization
+      setIsInitializing(false);
     }
   }, []);
 
   const loadUserProfile = async () => {
     try {
-      console.log('Loading user profile...');
       const response = await apiService.getUserProfile();
-      console.log('User profile response:', response);
       
       if (response.success && response.data && response.data.user) {
-        console.log('Setting user data:', response.data.user);
         setUser(response.data.user);
       } else if (response.error?.includes('expired') || response.error?.includes('Session expired')) {
         // Token expired, clear authentication
-        console.log('Token expired, clearing authentication');
         logout();
       } else if (!response.success) {
         console.error('Failed to load user profile:', response.error);
@@ -87,7 +88,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           logout();
         }
       } else {
-        console.log('No user data in response');
         logout();
       }
     } catch (error) {
@@ -96,6 +96,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error instanceof Error && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
         logout();
       }
+    } finally {
+      // Always finish initialization
+      setIsInitializing(false);
     }
   };
 
@@ -153,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     setEvaluationHistory([]);
+    setIsInitializing(false);
     apiService.logout();
   };
 
@@ -248,7 +252,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       evaluationHistory,
       addEvaluation,
       loadEvaluationHistory,
-      isLoading
+      isLoading,
+      isInitializing
     }}>
       {children}
     </AuthContext.Provider>

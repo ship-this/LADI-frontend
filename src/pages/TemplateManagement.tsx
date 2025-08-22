@@ -62,7 +62,7 @@ interface Template {
 }
 
 const TemplateManagement = () => {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, isInitializing } = useAuth()
   const navigate = useNavigate()
   const [templates, setTemplates] = React.useState<Template[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -86,12 +86,12 @@ const TemplateManagement = () => {
     is_active: true
   })
 
-  // Redirect to auth if not logged in
+  // Redirect to auth if not logged in and not initializing
   React.useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !isLoading && !isInitializing) {
       navigate('/auth')
     }
-  }, [user, isLoading, navigate])
+  }, [user, isLoading, isInitializing, navigate])
 
   // Load templates on component mount
   React.useEffect(() => {

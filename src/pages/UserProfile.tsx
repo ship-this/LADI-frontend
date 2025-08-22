@@ -39,7 +39,7 @@ interface UserProfileData {
 }
 
 const UserProfile = () => {
-  const { user, isLoading, logout } = useAuth()
+  const { user, isLoading, isInitializing, logout } = useAuth()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = React.useState("profile")
   const [isLoadingProfile, setIsLoadingProfile] = React.useState(true)
@@ -75,12 +75,12 @@ const UserProfile = () => {
   const [showDeletePassword, setShowDeletePassword] = React.useState(false)
   const [showDeleteConfirmation, setShowDeleteConfirmation] = React.useState(false)
 
-  // Redirect to auth if not logged in
+  // Redirect to auth if not logged in and not initializing
   React.useEffect(() => {
-    if (!user && !isLoading) {
+    if (!user && !isLoading && !isInitializing) {
       navigate('/auth')
     }
-  }, [user, isLoading, navigate])
+  }, [user, isLoading, isInitializing, navigate])
 
   // Load user profile data
   React.useEffect(() => {
@@ -269,12 +269,14 @@ const UserProfile = () => {
     })
   }
 
-  if (isLoading || isLoadingProfile) {
+  if (isLoading || isInitializing || isLoadingProfile) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-slate-600">Loading profile...</p>
+          <p className="mt-4 text-slate-600">
+            {isInitializing ? 'Initializing...' : isLoadingProfile ? 'Loading profile...' : 'Loading...'}
+          </p>
         </div>
       </div>
     )
