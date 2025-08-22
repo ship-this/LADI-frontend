@@ -28,12 +28,14 @@ import { apiService } from "@/services/api"
 
 interface UserProfileData {
   id: number
-  username: string
   email: string
   first_name: string
   last_name: string
+  role: string
+  is_active: boolean
+  email_verified: boolean
   created_at: string
-  last_login: string
+  updated_at: string
 }
 
 const UserProfile = () => {
@@ -48,7 +50,6 @@ const UserProfile = () => {
   // Profile form state
   const [profileData, setProfileData] = React.useState<UserProfileData | null>(null)
   const [profileForm, setProfileForm] = React.useState({
-    username: "",
     email: "",
     first_name: "",
     last_name: ""
@@ -97,7 +98,6 @@ const UserProfile = () => {
         const userData = response.data.user
         setProfileData(userData)
         setProfileForm({
-          username: userData.username || "",
           email: userData.email || "",
           first_name: userData.first_name || "",
           last_name: userData.last_name || ""
@@ -326,10 +326,10 @@ const UserProfile = () => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <User className="h-4 w-4 text-slate-500" />
+                    <Shield className="h-4 w-4 text-slate-500" />
                     <div>
-                      <p className="text-sm text-slate-500">Username</p>
-                      <p className="font-medium text-slate-900">{profileData.username}</p>
+                      <p className="text-sm text-slate-500">Role</p>
+                      <p className="font-medium text-slate-900 capitalize">{profileData.role}</p>
                     </div>
                   </div>
                 </div>
@@ -344,8 +344,8 @@ const UserProfile = () => {
                   <div className="flex items-center space-x-3">
                     <Clock className="h-4 w-4 text-slate-500" />
                     <div>
-                      <p className="text-sm text-slate-500">Last Login</p>
-                      <p className="font-medium text-slate-900">{formatDate(profileData.last_login)}</p>
+                      <p className="text-sm text-slate-500">Last Updated</p>
+                      <p className="font-medium text-slate-900">{formatDate(profileData.updated_at)}</p>
                     </div>
                   </div>
                 </div>
@@ -386,17 +386,6 @@ const UserProfile = () => {
                 <form onSubmit={handleProfileSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="username" className="text-slate-700">Username</Label>
-                      <Input
-                        id="username"
-                        type="text"
-                        value={profileForm.username}
-                        onChange={(e) => setProfileForm(prev => ({ ...prev, username: e.target.value }))}
-                        className="border-slate-200 focus:border-blue-500"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
                       <Label htmlFor="email" className="text-slate-700">Email</Label>
                       <Input
                         id="email"
@@ -407,8 +396,6 @@ const UserProfile = () => {
                         required
                       />
                     </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="first_name" className="text-slate-700">First Name</Label>
                       <Input
@@ -417,8 +404,11 @@ const UserProfile = () => {
                         value={profileForm.first_name}
                         onChange={(e) => setProfileForm(prev => ({ ...prev, first_name: e.target.value }))}
                         className="border-slate-200 focus:border-blue-500"
+                        required
                       />
                     </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="last_name" className="text-slate-700">Last Name</Label>
                       <Input
@@ -427,6 +417,7 @@ const UserProfile = () => {
                         value={profileForm.last_name}
                         onChange={(e) => setProfileForm(prev => ({ ...prev, last_name: e.target.value }))}
                         className="border-slate-200 focus:border-blue-500"
+                        required
                       />
                     </div>
                   </div>
@@ -450,6 +441,47 @@ const UserProfile = () => {
                     </Button>
                   </div>
                 </form>
+                
+                {/* Account Status Information */}
+                <div className="mt-8 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                  <h3 className="text-sm font-medium text-slate-900 mb-4">Account Status</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Account Status:</span>
+                      {profileData.is_active ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          <AlertTriangle className="w-3 h-3 mr-1" />
+                          Inactive
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Email Verification:</span>
+                      {profileData.email_verified ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <AlertTriangle className="w-3 h-3 mr-1" />
+                          Not Verified
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">User Role:</span>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                        {profileData.role}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

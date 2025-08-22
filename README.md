@@ -1,294 +1,397 @@
-# LADI Manuscript Evaluation System - Frontend
+# LADI Frontend
 
-A modern React-based frontend for the LADI Manuscript Evaluation System, providing an intuitive interface for AI-powered manuscript analysis.
+A modern React-based frontend for the Literary Analysis and Development Interface (LADI) platform. This frontend provides an intuitive user interface for manuscript evaluation, template management, and user profile management.
 
 ## Features
 
-- **Modern UI**: Built with React 18, TypeScript, and Tailwind CSS
-- **Real-time Processing**: Live progress tracking during manuscript evaluation
-- **Authentication**: Secure user authentication with JWT tokens
-- **File Upload**: Drag-and-drop support for PDF and DOCX files
-- **Evaluation Results**: 6 comprehensive evaluation categories with detailed scores
-- **Download Reports**: Professional PDF report generation and download
-- **History Management**: View and manage past evaluations
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+### Core Functionality
+- **User Authentication**: Secure login and registration system
+- **Dashboard**: Centralized navigation and project overview
+- **Document Upload**: Drag-and-drop file upload with progress tracking
+- **Evaluation Management**: Multiple evaluation methods and template selection
+- **Report Generation**: Download evaluation reports in PDF format
+- **Real-time Feedback**: Progress indicators and toast notifications
+
+### Evaluation Features
+- **Basic Evaluation**: Standard AI-powered manuscript analysis
+- **Template Evaluation**: Custom evaluation using uploaded templates
+- **Multi-Method Evaluation**: Combine basic and template-based evaluations
+- **Template Management**: Upload, edit, and manage evaluation templates
+- **Evaluation History**: View and download past evaluations
+
+### User Management
+- **Profile Management**: Update personal information and credentials
+- **Password Management**: Secure password change functionality
+- **Account Management**: Account deletion with confirmation
+- **Session Management**: Automatic token refresh and logout
+
+### User Interface
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+- **Modern UI**: Clean, professional interface using Shadcn UI components
+- **Dark/Light Mode**: Theme support (if implemented)
+- **Accessibility**: WCAG compliant design patterns
+- **Loading States**: Comprehensive loading indicators and skeleton screens
 
 ## Technology Stack
 
 - **Framework**: React 18 with TypeScript
-- **Build Tool**: Vite
-- **UI Library**: shadcn/ui components with Radix UI primitives
-- **Styling**: Tailwind CSS
-- **State Management**: React Context + TanStack Query
+- **Build Tool**: Vite 5.x
+- **Styling**: Tailwind CSS with Shadcn UI components
+- **State Management**: React Context API
 - **Routing**: React Router DOM
-- **Form Handling**: React Hook Form with Zod validation
-- **HTTP Client**: Native fetch API with custom service layer
-
-## Evaluation Categories
-
-The system evaluates manuscripts across 6 key dimensions:
-
-1. **Line & Copy Editing**: Grammar, syntax, clarity, and prose fluidity
-2. **Plot Evaluation**: Story structure, pacing, narrative tension, and resolution
-3. **Character Evaluation**: Character depth, motivation, consistency, and emotional impact
-4. **Book Flow Evaluation**: Rhythm, transitions, escalation patterns, and narrative cohesion
-5. **Worldbuilding & Setting**: Setting depth, continuity, and originality
-6. **LADI Readiness Score**: Overall readiness assessment with proprietary scoring
-
-## Prerequisites
-
-- Node.js 18+ 
-- npm or yarn
-- Backend API running (see backend README)
-
-## Installation
-
-1. **Clone the repository**
-   ```bash
-   cd frontend
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp env.example .env.local
-   ```
-   
-   Edit `.env.local` with your configuration:
-   ```env
-   # API Configuration
-   VITE_API_URL=http://localhost:5000/api
-   
-   # Development Configuration
-   VITE_DEV_MODE=true
-   ```
-
-4. **Start the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-The application will be available at `http://localhost:5173`
-
-## Backend Integration
-
-### API Endpoints
-
-The frontend integrates with the following backend endpoints:
-
-#### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/logout` - User logout
-- `POST /api/auth/refresh` - Refresh JWT token
-
-#### Document Evaluation
-- `POST /api/upload/evaluate` - Upload and evaluate document
-- `GET /api/upload/evaluation/<id>` - Get evaluation results
-- `GET /api/upload/evaluation/<id>/download` - Download evaluation report
-- `GET /api/upload/evaluations` - Get user's evaluation history
-
-#### User Management
-- `GET /api/user/profile` - Get user profile
-- `PUT /api/user/profile` - Update user profile
-
-### API Service
-
-The frontend uses a centralized API service (`src/services/api.ts`) that handles:
-
-- **Authentication**: JWT token management and refresh
-- **File Upload**: Multipart form data upload with progress tracking
-- **Error Handling**: Consistent error handling and user feedback
-- **Request/Response**: Type-safe API communication
+- **HTTP Client**: Fetch API with AbortController
+- **Form Handling**: React Hook Form (if implemented)
+- **Notifications**: Custom toast system
+- **Icons**: Lucide React
 
 ## Project Structure
 
 ```
 frontend/
+├── public/                     # Static assets
+│   ├── index.html             # HTML template
+│   └── favicon.ico            # Favicon
 ├── src/
-│   ├── components/
-│   │   ├── auth/           # Authentication components
-│   │   ├── layout/         # Layout components (Header, etc.)
-│   │   └── ui/             # Reusable UI components
-│   ├── contexts/           # React contexts (Auth, etc.)
-│   ├── hooks/              # Custom React hooks
-│   ├── lib/                # Utility functions
-│   ├── pages/              # Page components
-│   ├── services/           # API services
-│   └── assets/             # Static assets
-├── public/                 # Public assets
-├── env.example            # Environment configuration example
-└── package.json           # Dependencies and scripts
+│   ├── components/            # Reusable components
+│   │   ├── ui/               # Shadcn UI components
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── tabs.tsx
+│   │   │   └── ...
+│   │   ├── layout/           # Layout components
+│   │   │   ├── header.tsx
+│   │   │   ├── footer.tsx
+│   │   │   └── sidebar.tsx
+│   │   └── enhanced-evaluation-upload.tsx
+│   ├── contexts/             # React contexts
+│   │   └── AuthContext.tsx   # Authentication context
+│   ├── hooks/                # Custom React hooks
+│   │   └── use-toast.ts      # Toast notification hook
+│   ├── pages/                # Page components
+│   │   ├── Dashboard.tsx     # Main dashboard
+│   │   ├── Login.tsx         # Login page
+│   │   ├── Register.tsx      # Registration page
+│   │   ├── BasicEvaluation.tsx
+│   │   ├── TemplateEvaluation.tsx
+│   │   ├── TemplateManagement.tsx
+│   │   ├── UserProfile.tsx
+│   │   └── NotFound.tsx
+│   ├── services/             # API services
+│   │   └── api.ts           # API client
+│   ├── types/                # TypeScript type definitions
+│   │   └── index.ts
+│   ├── utils/                # Utility functions
+│   │   └── index.ts
+│   ├── App.tsx              # Main app component
+│   ├── main.tsx             # App entry point
+│   └── index.css            # Global styles
+├── package.json             # Dependencies and scripts
+├── vite.config.ts           # Vite configuration
+├── tailwind.config.ts       # Tailwind CSS configuration
+├── tsconfig.json            # TypeScript configuration
+├── components.json          # Shadcn UI configuration
+└── README.md               # This file
 ```
 
-## Key Components
+## Pages and Components
 
-### Dashboard (`src/pages/Dashboard.tsx`)
-- Main application interface
-- File upload with drag-and-drop
-- Real-time progress tracking
-- Evaluation results display
-- PDF report download
+### Authentication Pages
+- **Login**: User authentication with email/password
+- **Register**: New user registration
+- **Protected Routes**: Automatic redirect for unauthenticated users
 
-### Authentication (`src/components/auth/`)
-- Login and signup forms
-- Form validation with React Hook Form
-- Error handling and user feedback
+### Main Pages
+- **Dashboard**: Central hub with navigation cards
+- **Basic Evaluation**: Simple manuscript evaluation interface
+- **Template Evaluation**: Advanced evaluation with template selection
+- **Template Management**: Upload and manage evaluation templates
+- **User Profile**: Account settings and management
 
-### API Service (`src/services/api.ts`)
-- Centralized API communication
+### Components
+- **EnhancedEvaluationUpload**: Comprehensive file upload with progress tracking
+- **Header**: Navigation and user menu
+- **Toast Notifications**: User feedback system
+- **Loading Spinners**: Progress indicators
+- **Form Components**: Reusable form elements
+
+## API Integration
+
+### Authentication
 - JWT token management
-- File upload handling
-- Error handling and retry logic
+- Automatic token refresh
+- Secure logout functionality
+- Protected route handling
 
-### Auth Context (`src/contexts/AuthContext.tsx`)
-- User authentication state management
-- Token persistence and refresh
-- Evaluation history management
+### File Upload
+- Drag-and-drop interface
+- File type validation
+- Progress tracking
+- Error handling
+
+### Evaluation
+- Multiple evaluation methods
+- Template selection
+- Real-time progress updates
+- Result display and download
+
+## Setup Instructions
+
+### Prerequisites
+- Node.js 16+
+- npm or yarn package manager
+
+### Quick Setup
+1. **Clone the repository** (if not already done)
+2. **Run the setup script** from the project root:
+   ```bash
+   # Unix/Linux/macOS
+   ./setup.sh
+   
+   # Windows
+   setup.bat
+   ```
+
+### Manual Setup
+1. **Install dependencies**:
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. **Set up environment variables**:
+   ```bash
+   cp env.example .env
+   # Edit .env with your API URL
+   ```
+
+3. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+
+### Environment Configuration
+Create a `.env` file in the frontend directory:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
 
 ## Development
 
 ### Available Scripts
-
 ```bash
-# Development
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run preview      # Preview production build
+# Development server
+npm run dev
 
-# Code Quality
-npm run lint         # Run ESLint
-npm run type-check   # Run TypeScript type checking
-```
-
-### Code Style
-
-The project uses:
-- **ESLint**: Code linting and formatting
-- **Prettier**: Code formatting
-- **TypeScript**: Type safety and IntelliSense
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VITE_API_URL` | Backend API base URL | `http://localhost:5000/api` |
-| `VITE_DEV_MODE` | Development mode flag | `true` |
-
-## User Workflow
-
-1. **Authentication**: Users sign up or log in to access the system
-2. **File Upload**: Users upload PDF or DOCX manuscripts via drag-and-drop
-3. **Processing**: Real-time progress tracking during AI evaluation
-4. **Results**: View detailed evaluation scores across 6 categories
-5. **Download**: Generate and download professional PDF reports
-6. **History**: Access and manage past evaluations
-
-## Error Handling
-
-The application includes comprehensive error handling:
-
-- **Network Errors**: Automatic retry with exponential backoff
-- **Authentication Errors**: Automatic token refresh and re-authentication
-- **File Upload Errors**: Clear error messages and validation
-- **User Feedback**: Toast notifications for all user actions
-
-## Security Features
-
-- **JWT Authentication**: Secure token-based authentication
-- **Token Refresh**: Automatic token refresh before expiration
-- **Input Validation**: Client-side and server-side validation
-- **CORS Handling**: Proper cross-origin request handling
-- **Secure File Upload**: File type and size validation
-
-## Performance Optimizations
-
-- **Code Splitting**: Automatic route-based code splitting
-- **Lazy Loading**: Components loaded on demand
-- **Caching**: API response caching with React Query
-- **Optimized Builds**: Vite for fast development and optimized production builds
-
-## Testing
-
-```bash
-# Run tests
-npm run test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests in watch mode
-npm run test:watch
-```
-
-## Deployment
-
-### Production Build
-
-```bash
 # Build for production
 npm run build
 
 # Preview production build
 npm run preview
+
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint
+```
+
+### Code Style
+- Use TypeScript for all components
+- Follow React best practices
+- Use functional components with hooks
+- Implement proper error boundaries
+- Add comprehensive prop types
+
+### Component Guidelines
+- Keep components small and focused
+- Use meaningful component names
+- Implement proper loading states
+- Add error handling
+- Use TypeScript interfaces for props
+
+### State Management
+- Use React Context for global state
+- Keep local state in components
+- Implement proper state updates
+- Use useCallback and useMemo for optimization
+
+## User Interface Guidelines
+
+### Design System
+- **Colors**: Consistent color palette using Tailwind CSS
+- **Typography**: Clear hierarchy with readable fonts
+- **Spacing**: Consistent spacing using Tailwind utilities
+- **Components**: Reusable Shadcn UI components
+
+### Responsive Design
+- Mobile-first approach
+- Breakpoint considerations
+- Touch-friendly interfaces
+- Flexible layouts
+
+### Accessibility
+- Semantic HTML structure
+- ARIA labels and roles
+- Keyboard navigation
+- Screen reader support
+- Color contrast compliance
+
+## API Client
+
+### Request Configuration
+- Base URL configuration
+- Request/response interceptors
+- Error handling
+- Timeout management
+- Authentication headers
+
+### Error Handling
+- Network error handling
+- API error responses
+- User-friendly error messages
+- Retry mechanisms
+- Fallback states
+
+## Performance Optimization
+
+### Code Splitting
+- Route-based code splitting
+- Component lazy loading
+- Dynamic imports
+- Bundle size optimization
+
+### Caching
+- API response caching
+- Static asset caching
+- Browser caching strategies
+- Memory management
+
+### Monitoring
+- Performance metrics
+- Error tracking
+- User analytics
+- Bundle analysis
+
+## Testing
+
+### Unit Testing
+- Component testing with React Testing Library
+- Hook testing
+- Utility function testing
+- Mock API responses
+
+### Integration Testing
+- User flow testing
+- API integration testing
+- Cross-browser testing
+- Mobile device testing
+
+### E2E Testing
+- Critical user journeys
+- Authentication flows
+- File upload testing
+- Error scenario testing
+
+## Deployment
+
+### Build Process
+```bash
+# Create production build
+npm run build
+
+# Preview build locally
+npm run preview
 ```
 
 ### Deployment Options
+- **Static Hosting**: Netlify, Vercel, GitHub Pages
+- **CDN**: CloudFlare, AWS CloudFront
+- **Container**: Docker with nginx
+- **Server**: Apache, nginx
 
-- **Vercel**: Zero-config deployment with automatic CI/CD
-- **Netlify**: Drag-and-drop deployment with form handling
-- **AWS S3 + CloudFront**: Static site hosting with CDN
-- **Docker**: Containerized deployment
-
-### Environment Configuration
-
-For production deployment, ensure:
-
-1. **API URL**: Set `VITE_API_URL` to your production backend URL
-2. **HTTPS**: Use HTTPS in production for secure communication
-3. **CORS**: Configure backend CORS to allow your frontend domain
-4. **Environment Variables**: Set all required environment variables
+### Environment Variables
+- Production API URLs
+- Analytics configuration
+- Feature flags
+- Error tracking
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **API Connection Errors**
-   - Verify backend is running on correct port
+1. **Build Errors**:
+   - Check TypeScript errors
+   - Verify all dependencies are installed
+   - Clear node_modules and reinstall
+
+2. **API Connection Issues**:
+   - Verify API URL in .env
    - Check CORS configuration
-   - Ensure environment variables are set correctly
+   - Test API endpoints directly
 
-2. **Authentication Issues**
-   - Clear browser storage and re-authenticate
-   - Check JWT token expiration
-   - Verify backend authentication endpoints
+3. **Authentication Issues**:
+   - Check JWT token storage
+   - Verify token expiration
+   - Clear browser storage
 
-3. **File Upload Problems**
-   - Check file size limits (16MB max)
-   - Verify supported file types (PDF, DOCX)
-   - Ensure proper network connectivity
+4. **File Upload Issues**:
+   - Check file size limits
+   - Verify file type support
+   - Test with different browsers
 
-4. **Build Errors**
-   - Clear node_modules and reinstall dependencies
-   - Check TypeScript configuration
-   - Verify all environment variables are set
+### Debug Tools
+- React Developer Tools
+- Network tab for API calls
+- Console for error messages
+- Performance profiling
 
-## Support
+## Contributing
 
-For issues and questions:
-1. Check the troubleshooting section
-2. Review browser console for error messages
-3. Verify backend API is running and accessible
-4. Check network tab for API request/response details
+### Development Workflow
+1. Create feature branch
+2. Implement changes
+3. Add tests
+4. Update documentation
+5. Submit pull request
+
+### Code Review
+- TypeScript compliance
+- Component structure
+- Error handling
+- Performance considerations
+- Accessibility compliance
+
+### Documentation
+- Update README for new features
+- Add component documentation
+- Update API documentation
+- Include usage examples
+
+## Browser Support
+
+- **Chrome**: Latest 2 versions
+- **Firefox**: Latest 2 versions
+- **Safari**: Latest 2 versions
+- **Edge**: Latest 2 versions
+- **Mobile**: iOS Safari, Chrome Mobile
+
+## Performance Targets
+
+- **First Contentful Paint**: < 1.5s
+- **Largest Contentful Paint**: < 2.5s
+- **Cumulative Layout Shift**: < 0.1
+- **First Input Delay**: < 100ms
+
+## Security Considerations
+
+- **XSS Prevention**: Proper input sanitization
+- **CSRF Protection**: Token-based protection
+- **Content Security Policy**: CSP headers
+- **Secure Headers**: HTTPS enforcement
+- **Input Validation**: Client-side validation
 
 ## License
 
-This project is proprietary software for LADI Manuscript Evaluation System.
+This project is part of the LADI platform. See the main project README for license information.

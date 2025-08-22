@@ -7,6 +7,10 @@ interface User {
   first_name: string;
   last_name: string;
   role: string;
+  is_active: boolean;
+  email_verified: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 interface EvaluationHistory {
